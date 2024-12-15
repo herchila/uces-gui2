@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title_section %}
+Editar
+{% endblock %}
+
+{% block content %}
+<form action="{% url 'polls:detail' question.id %}" method="post">
+    {% csrf_token %}
+    <label for="question_text">Nombre</label><br>
+    <input type="text" value="{{ question.question_text }}" name="question_text"><br>
+    {% if form.question_text.errors %}
+    {% for error in form.question_text.errors %}<strong>{{ error }}</strong>{% endfor %}
+    <br>
+    {% endif %}
+    <br>
+    <input type="submit" value="Editar">
+</form>
+
+<br>
+<a href="{% url 'polls:index' %}">Volver</a>
+
+{% comment %} <ul>
+{% for choice in question.choice_set.all %}
+<li>
+    {{ choice.choice_text }} ({{ choice.votes }} votes)
+</li>
+{% endfor %}
+</ul> {% endcomment %}
+
+{% comment %} <form action="{% url 'polls:vote' question.id %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        <legend>Options</legend>
+        {% if error_message %}<strong>{{ error_message }}</strong>{% endif %}
+
+        {% for choice in question.choice_set.all %}
+        <input type="radio" name="choice" id="choice_{{ choice.id }}" value="{{ choice.id }}" />
+        <lable for="choice_{{ choice.id }}">{{ choice.choice_text }}</label>
+        {% endfor %}
+    </fieldset>
+    <input type="submit" value="Vote" />
+</form> {% endcomment %}
+{% endblock %}

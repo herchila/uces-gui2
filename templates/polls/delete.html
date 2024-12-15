@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title_section %}
+Eliminar
+{% endblock %}
+
+{% block content %}
+<p>¿Queres eliminar el registro <strong>{{ question.question_text }}</strong>?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="question_id" value="{{ question.id }}">
+    <input type="submit" value="Si" class="btn btn-link">
+    <a href="{% url 'polls:index' %}" class="btn btn-primary">No</a>
+</form>
+{% endblock %}
