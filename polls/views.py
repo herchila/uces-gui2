@@ -1,11 +1,10 @@
 from django.contrib import messages
-from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
+from crud.database import execute_query
 from polls.forms import CrudForm
-from polls.models import Question
 
 
 def index(request):
@@ -15,12 +14,16 @@ def index(request):
         today = timezone.now()
         if form.is_valid():
             question_text = form.cleaned_data["question_text"]
-            Question.objects.create(question_text=question_text, pub_date=today)
-            return redirect(reverse("polls:index"))
+            query = "INSERT INTO polls_question (question_text, pub_date) VALUES (%s, %s)"
+            execute_query(query, (question_text, today))
+            messages.success(request, "Registro creado.")
+        else:
+            messages.error(request, "Hubo un error en el formulario.")
     else:
         form = CrudForm()
 
-    latest_question_list = Question.objects.order_by("-pub_date")
+    query = "SELECT * FROM polls_question ORDER BY pub_date DESC LIMIT 5"
+    latest_question_list = execute_query(query, fetch=True)
     context = {
         "form": form,
         "latest_question_list": latest_question_list,
@@ -29,60 +32,46 @@ def index(request):
 
 
 def detail(request, question_id):
-    try:
-        question = Question.objects.get(pk=question_id)
-    except Question.DoesNotExist:
+    query = "SELECT * FROM polls_question WHERE id = %s"
+    question = execute_query(query, (question_id,), fetch=True)
+
+    if not question:
         messages.error(request, "El registro no existe.")
         return redirect(reverse("polls:index"))
+
+    question = question[0]
 
     if request.method == "POST":
         form = CrudForm(request.POST)
         if form.is_valid():
             question_text = form.cleaned_data.get("question_text")
-            question.question_text = question_text
-            question.save()
+            query = "UPDATE polls_question SET question_text = %s WHERE id = %s"
+            execute_query(query, (question_text, question_id))
             messages.success(request, "Registro actualizado.")
             return redirect(reverse("polls:index"))
         else:
-            return render(
-                request,
-                "polls/detail.html",
-                {
-                    "form": form,
-                    "question": question
-                },
-            )
+            messages.error(request, "Error al editar el registro.")
     else:
-        return render(
-            request,
-            "polls/detail.html",
-            {
-                "form": CrudForm(),
-                "question": question
-            },
-        )
-
-
-def confirm_delete(request, question_id):
-    if request.method == "POST":
-        q_id = request.POST.get("question_id", None)
-        return redirect(reverse("polls:delete", args=(q_id,)))
+        form = CrudForm(initial={"question_text": question["question_text"]})
 
     return render(
         request,
-        "polls/confirm_delete.html",
-        {"question_id": question_id}
+        "polls/detail.html",
+        {
+            "form": form,
+            "question": question
+        },
     )
 
 
 def delete(request, question_id):
-    try:
-        question = Question.objects.get(pk=question_id)
-        question_text = question.question_text
-    except Question.DoesNotExist:
+    query = "SELECT * FROM polls_question WHERE id = %s"
+    question = execute_query(query, (question_id,), fetch=True)
+    if not question:
         messages.error(request, "El registro que se intentó borrar no existe.")
         return redirect(reverse("polls:index"))
 
+    question = question[0]
     if request.method == "POST":
         try:
             q_id = int(request.POST.get("question_id", None))
@@ -94,7 +83,9 @@ def delete(request, question_id):
             messages.error(request, "Hubo un error inesperado. Intenta de nuevo.")
             return redirect(reverse("index"))
 
-        question.delete()
+        question_text = question["question_text"]
+        query = "DELETE FROM polls_question WHERE id = %s"
+        execute_query(query, (question_id,))
         messages.success(request, "El registro '%s' fue eliminado" % question_text)
         return redirect(reverse("polls:index"))
 
@@ -104,31 +95,3 @@ def delete(request, question_id):
             "polls/delete.html",
             {"question": question}
         )
-
-
-# def results(request, question_id):
-#     try:
-#         question = Question.objects.get(pk=question_id)
-#     except Question.DoesNotExist:
-#         raise Http404()
-    
-#     return render(request, "polls/results.html", {"question": question})
-
-
-# def vote(request, question_id):
-#     try:
-#         choice = request.POST["choice"]
-#         question = Question.objects.get(pk=question_id)
-#         selected_choice = question.choice_set.get(pk=choice)
-#     except (KeyError, Question.DoesNotExist):
-#         return render(request, "polls/detail.html", {
-#             "question": question,
-#             "error_message": "No seleccionaste una opción.",
-#         })
-
-#     else:
-#         selected_choice.votes += 1
-#         selected_choice.save()
-#         return HttpResponseRedirect(
-#             reverse("polls:results", args=(question.id,))
-#         )
