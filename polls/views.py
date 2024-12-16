@@ -126,4 +126,29 @@ def index2(request):
 
 
 def edit2(request, question_id):
-    pass
+    if request.method == "POST":
+        form = CrudForm(request.POST)
+        if form.is_valid():
+            question_text = form.cleaned_data.get("question_text", "")
+            query = "UPDATE polls_question SET question_text = %s WHERE id = %s"
+            execute_query(query, (question_text, question_id))
+            messages.success(request, "El registro se editó correctamente.")
+        else:
+            messages.error(request, "Error al editar el registro.")
+
+        return redirect(reverse("polls:index"))
+    else:
+        form = CrudForm()
+
+    query = "SELECT * FROM polls_question WHERE id = %s"
+    question = execute_query(query, (question_id,), fetch=True)
+    question = question[0]
+
+    return render(
+        request,
+        "polls/detail.html",
+        {
+            "question": question,
+            "form": form,
+        }
+    )
