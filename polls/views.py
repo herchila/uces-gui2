@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from crud.database import execute_query
+from crud.database2 import execute_query
 from polls.forms import CrudForm
 
 
@@ -31,7 +31,7 @@ def index(request):
     return render(request, "polls/index.html", context)
 
 
-def detail(request, question_id):
+def edit(request, question_id):
     query = "SELECT * FROM polls_question WHERE id = %s"
     question = execute_query(query, (question_id,), fetch=True)
 
@@ -95,3 +95,35 @@ def delete(request, question_id):
             "polls/delete.html",
             {"question": question}
         )
+
+
+def index2(request):
+    if request.method == "POST":
+        today = timezone.now()
+        form = CrudForm(request.POST)
+
+        if form.is_valid():
+            question_text = form.cleaned_data.get("question_text")
+            query = "INSERT INTO polls_question (question_text, pub_date) VALUES (%s, %s)"
+            execute_query(query, (question_text, today))
+            messages.success(request, f"Se creó el registro '{question_text}'.")
+        else:
+            messages.error(request, "No se pudo crear el registro.")
+    else:
+        form = CrudForm()
+
+    query = "SELECT * FROM polls_question ORDER BY pub_date DESC"
+    questions = execute_query(query, fetch=True)
+
+    return render(
+        request,
+        "polls/index.html",
+        {
+            "latest_question_list": questions,
+            "form": form,
+        }
+    )
+
+
+def edit2(request, question_id):
+    pass

@@ -5,7 +5,7 @@ Editar
 {% endblock %}
 
 {% block content %}
-<form action="{% url 'polls:detail' question.id %}" method="post">
+<form action="{% url 'polls:edit' question.id %}" method="post">
     {% csrf_token %}
     <label for="question_text">Nombre</label><br>
     <input type="text" value="{{ question.question_text }}" name="question_text"><br>

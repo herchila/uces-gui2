@@ -1,7 +1,7 @@
 import os
 import psycopg2
 
-from psycopg2.extras import RealDictCursor
+from psycopg2.extras import RealDictCursor, RealDictRow
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,7 +41,7 @@ def connect_db():
         return None
 
 
-def execute_query(query, params=None, fetch=False):
+def execute_query(query, params=None, fetch=False) -> list[RealDictRow] | None:
     """
     Ejecuta una consulta SQL de forma segura, maneja conexión y cierre.
     - query: La consulta SQL a ejecutar (puede contener marcadores %s).

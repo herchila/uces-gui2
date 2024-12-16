@@ -10,7 +10,7 @@ Registros
     <label for="question_text">Nombre</label><br>
     <input type="text" name="question_text"><br>
     {% if form.question_text.errors %}
-    {% for error in form.question_text.errors %}<strong>{{ error }}</strong>{% endfor %}
+    <span style="color: #dc3545;">{% for error in form.question_text.errors %}<strong>{{ error }}</strong>{% endfor %}</span>
     <br>
     {% endif %}
     <br>
@@ -33,7 +33,7 @@ Registros
             {% for question in latest_question_list %}
             <tr>
                 <td>{{ question.id }}</td>
-                <td><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></td>
+                <td><a href="{% url 'polls:edit' question.id %}">{{ question.question_text }}</a></td>
                 <td><a href="{% url 'polls:delete' question.id %}">Eliminar</a></td>
             </tr>
             {% endfor %}
