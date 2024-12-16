@@ -35,10 +35,12 @@ def execute_query(query, params=None, fetch=False):
         conn.commit()
 
         if fetch:
-            return cursor.fetchall()
+            return True, cursor.fetchall()
+        
+        return True, None
     except Exception as e:
         print(f"[execute_query] Error: {e}")
+        return False, str(e)
     finally:
         cursor.close()
         conn.close()
-

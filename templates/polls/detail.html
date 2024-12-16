@@ -5,10 +5,11 @@ Editar
 {% endblock %}
 
 {% block content %}
-<form action="{% url 'polls:edit' question.id %}" method="post">
+<form method="post">
     {% csrf_token %}
     <label for="question_text">Nombre</label><br>
     <input type="text" value="{{ question.question_text }}" name="question_text"><br>
+    <input type="hidden" value="{{ question.id }}" name="question_id">
     {% if form.question_text.errors %}
     {% for error in form.question_text.errors %}<strong>{{ error }}</strong>{% endfor %}
     <br>
