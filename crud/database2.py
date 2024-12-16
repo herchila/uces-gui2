@@ -40,6 +40,7 @@ def execute_query(query, params=None, fetch=False):
         return True, None
     except Exception as e:
         print(f"[execute_query] Error: {e}")
+        conn.rollback()
         return False, str(e)
     finally:
         cursor.close()

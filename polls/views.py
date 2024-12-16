@@ -110,7 +110,7 @@ def index2(request):
 
         question_text = form.cleaned_data.get("question_text")
         query = "INSERT INTO polls_question (question_text, pub_date) VALUES (%s, %s)"
-        success, result = execute_query(query, (question_text, today))
+        success, result = execute_query(query, (question_text,))
         if not success:
             messages.error(request, "No se pudo crear el registro.")
             return redirect(reverse("polls:index"))
